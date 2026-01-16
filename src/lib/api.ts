@@ -1,4 +1,4 @@
-const BASE_URL = 'https://tt-api-340847553966.europe-west1.run.app';
+const BASE_URL: string = (import.meta.env?.VITE_API_BASE_URL as string) || 'http://localhost:8080';
 
 export async function requestOTP(email: string): Promise<{ success: boolean; error?: string }> {
   try {
