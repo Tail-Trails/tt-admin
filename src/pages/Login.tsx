@@ -1,51 +1,25 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { requestOTP, verifyOTP } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Loader2, Mail, KeyRound, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const [step, setStep] = useState<'email' | 'otp'>('email');
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
+  const { signInWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleRequestOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-    
+  const handleGoogleSignIn = async () => {
     setIsLoading(true);
-    const result = await requestOTP(email);
-    setIsLoading(false);
-    
-    if (result.success) {
-      toast.success('OTP sent to your email');
-      setStep('otp');
-    } else {
-      toast.error(result.error || 'Failed to send OTP');
-    }
-  };
-
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otp) return;
-    
-    setIsLoading(true);
-    const result = await verifyOTP(email, otp);
-    setIsLoading(false);
-    
-    if (result.success && result.token) {
-      login(result.token, email);
-      toast.success('Welcome back!');
+    try {
+      await signInWithGoogle();
+      toast.success('Signed in successfully');
       navigate('/');
-    } else {
-      toast.error(result.error || 'Invalid OTP');
+    } catch (e: any) {
+      console.error('Google sign-in failed', e);
+      toast.error(e?.message || 'Google sign-in failed');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -61,78 +35,20 @@ export default function Login() {
         </div>
 
         <div className="glass-panel rounded-xl p-6">
-          {step === 'email' ? (
-            <form onSubmit={handleRequestOTP} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="admin@tailtrails.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-              
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    Send OTP
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </Button>
-            </form>
-          ) : (
-            <form onSubmit={handleVerifyOTP} className="space-y-4">
-              <div className="text-center mb-4">
-                <p className="text-sm text-muted-foreground">
-                  Enter the 6-digit code sent to
-                </p>
-                <p className="font-medium text-primary">{email}</p>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="otp">Verification Code</Label>
-                <div className="relative">
-                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="otp"
-                    type="text"
-                    placeholder="000000"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="pl-10 font-mono text-center text-lg tracking-widest"
-                    maxLength={6}
-                    required
-                  />
-                </div>
-              </div>
-              
-              <Button type="submit" className="w-full" disabled={isLoading || otp.length !== 6}>
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  'Verify & Sign In'
-                )}
-              </Button>
-
-              <button
-                type="button"
-                onClick={() => setStep('email')}
-                className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Use a different email
-              </button>
-            </form>
-          )}
+          <div className="space-y-4">
+            <Button
+              variant="outline"
+              type="button"
+              className="w-full"
+              onClick={handleGoogleSignIn}
+              disabled={isLoading}
+            >
+              <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+                <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
+              </svg>
+              Google
+            </Button>
+          </div>
         </div>
       </div>
     </div>
