@@ -1,4 +1,4 @@
-import { Home, Users, Dog, MapPin, Route, LogOut } from 'lucide-react';
+import { Home, Users, Dog, MapPin, Route, LogOut, MessageSquareQuote, Inbox } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -13,6 +13,8 @@ const navItems = [
   { id: 'dogs', label: 'Dogs', icon: Dog },
   { id: 'trails', label: 'Trails', icon: Route },
   { id: 'map', label: 'Map', icon: MapPin },
+  { id: 'feedback', label: 'Feedback', icon: MessageSquareQuote },
+  { id: 'waitlist', label: 'Waitlist', icon: Inbox },
 ];
 
 export function AdminSidebar({ activeView, onViewChange }: AdminSidebarProps) {

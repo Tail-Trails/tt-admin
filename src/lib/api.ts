@@ -66,6 +66,60 @@ export async function updateAdminData<T>(endpoint: string, body: unknown, token?
   }
 }
 
+export async function createAdminData<T>(endpoint: string, body: unknown, token?: string): Promise<{ data?: T; error?: string }> {
+  try {
+    const useToken = token ?? getStoredToken();
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (useToken) headers['Authorization'] = `Bearer ${useToken}`;
+
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      return { error: error.detail || 'Failed to create' };
+    }
+
+    const data = await response.json();
+    return { data };
+  } catch (error) {
+    return { error: 'Network error' };
+  }
+}
+
+export async function uploadFile(endpoint: string, file: File, extra?: Record<string, string>, token?: string): Promise<{ data?: any; error?: string }> {
+  try {
+    const useToken = token ?? getStoredToken();
+    const form = new FormData();
+    form.append('file', file);
+    if (extra) {
+      Object.entries(extra).forEach(([k, v]) => form.append(k, v));
+    }
+
+    const headers: Record<string, string> = {};
+    if (useToken) headers['Authorization'] = `Bearer ${useToken}`;
+
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers,
+      body: form,
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      return { error: err.detail || 'Upload failed' };
+    }
+
+    const data = await response.json();
+    return { data };
+  } catch (e) {
+    return { error: 'Network error' };
+  }
+}
+
 export async function deleteAdminData(endpoint: string, token?: string): Promise<{ success: boolean; error?: string }> {
   try {
     const useToken = token ?? getStoredToken();

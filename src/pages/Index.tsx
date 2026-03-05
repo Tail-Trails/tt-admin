@@ -7,6 +7,8 @@ import { UsersPanel } from '@/components/UsersPanel';
 import { DogsPanel } from '@/components/DogsPanel';
 import { TrailsPanel } from '@/components/TrailsPanel';
 import { AdminMapPanel } from '@/components/AdminMapPanel';
+import { WaitlistPanel } from '@/components/WaitlistPanel';
+import { FeedbackPanel } from '@/components/FeedbackPanel';
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
@@ -28,6 +30,10 @@ const Index = () => {
         return <TrailsPanel />;
       case 'map':
         return <AdminMapPanel />;
+      case 'feedback':
+        return <FeedbackPanel />;
+      case 'waitlist':
+        return <WaitlistPanel />;
       default:
         return <AdminOverview />;
     }
