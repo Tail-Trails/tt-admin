@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Pencil, Trash2, Check, X, Loader2 } from 'lucide-react';
+import { Pencil, Trash2, Check, X, Loader2, ArrowRight } from 'lucide-react';
 
 interface DataTableProps<T extends Record<string, unknown>> {
   data: T[];
@@ -11,6 +11,7 @@ interface DataTableProps<T extends Record<string, unknown>> {
   isLoading?: boolean;
   onUpdate?: (id: string, data: Partial<T>) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
+  onOpen?: (id: string) => void;
 }
 
 export function DataTable<T extends Record<string, unknown>>({
@@ -20,6 +21,7 @@ export function DataTable<T extends Record<string, unknown>>({
   isLoading,
   onUpdate,
   onDelete,
+  onOpen,
 }: DataTableProps<T>) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<T>>({});
@@ -135,6 +137,17 @@ export function DataTable<T extends Record<string, unknown>>({
                         </>
                       ) : (
                         <>
+                          {onOpen && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => onOpen(rowId)}
+                              className="h-8 w-8"
+                              title="Open"
+                            >
+                              <ArrowRight className="w-4 h-4" />
+                            </Button>
+                          )}
                           {onUpdate && (
                             <Button
                               size="icon"

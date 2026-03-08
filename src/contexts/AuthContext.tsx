@@ -66,20 +66,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const auth = getAuth();
       const unsubscribe = onAuthStateChanged(auth, async (fbUser: User | null) => {
         if (fbUser) {
-          // getIdToken returns a Firebase ID token (JWT)
+          // getIdToken returns a Firebase ID token (JWT). We must not overwrite
+          // any existing backend `access_token` with the Firebase token on page
+          // refresh. Store the Firebase token separately and prefer the stored
+          // backend token if present.
           const idToken = await fbUser.getIdToken();
           try {
-            localStorage.setItem('access_token', idToken);
+            localStorage.setItem('firebase_id_token', idToken);
             localStorage.setItem('user_email', fbUser.email ?? '');
           } catch (e) {
             // ignore localStorage errors
           }
-          setToken(idToken);
+
+          // Preserve any existing backend access token instead of replacing it.
+          let existingAccess: string | null = null;
+          try {
+            existingAccess = localStorage.getItem('access_token');
+          } catch (e) {
+            existingAccess = null;
+          }
+
+          if (existingAccess) {
+            setToken(existingAccess);
+          } else {
+            // Do not automatically set the Firebase token as the API access token.
+            // The expected flow is that `signInWithGoogle` exchanges the Firebase
+            // token for a backend token and calls `login()`.
+            setToken(null);
+          }
+
           setUser({ email: fbUser.email ?? '' });
         } else {
           try {
-            localStorage.removeItem('access_token');
+            localStorage.removeItem('firebase_id_token');
             localStorage.removeItem('user_email');
+          } catch (e) {}
+          // Sign-out should clear the backend access token too.
+          try {
+            localStorage.removeItem('access_token');
           } catch (e) {}
           setToken(null);
           setUser(null);
